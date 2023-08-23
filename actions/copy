@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# locally copy/clone a project
+
+# error checking
+
+if [[ ! -e $DEV0_TREES/$1 ]]; then
+  echo "Project $1 not found in $DEV0_TREES"
+  exit 1
+fi
+if [[  -e $DEV0_TREES/$2 ]]; then
+  echo "Project $2 already exists in $DEV0_TREES"
+  exit 1
+fi
+
+# use project's copy script if there is one
+# otherwise use cp -R
+
+if [[ -e $DEV0_TREES/$1/copy ]];then
+   $DEV0_TREES/$1/copy $DEV0_TREES/$2
+else
+  cp -r $DEV0_TREES/$1 $DEV0_TREES/$2
+fi

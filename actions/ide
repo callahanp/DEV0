@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# run visual studio code for the project
+
+# Errors:
+#   - Environment not set for DEV0
+#   - Project not found among the trees
+#   - Project code workspace not found
+# Parameter sets:
+# no-parameters: use previous context
+# set -x #uncomment to debug
+
+source $DEV0_HELPERS/set_work_context_f
+set_work_context_f $1 $2 $3
+if [[ $? == 0 ]];then 
+  cd $context_path
+  echo "$context_path" > $DEV0_USER_DATA/context 
+  if [[ ! -e $code_workspace_file ]]; then
+    code_workspace_file="."
+  fi
+
+  code $code_workspace_file
+else
+  echo wtf
+fi
+echo $context_path
+cd $context_path

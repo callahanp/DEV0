@@ -1,0 +1,60 @@
+restore_dir=$(pwd)
+SCRIPT_PATH="${BASH_SOURCE}"
+while [ -L "${SCRIPT_PATH}" ]; do
+  SCRIPT_DIR="$(cd -P "$(dirname "${SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+  SCRIPT_PATH="$(readlink "${SCRIPT_PATH}")"
+  [[ ${SCRIPT_PATH} != /* ]] && SCRIPT_PATH="${SCRIPT_DIR}/${SCRIPT_PATH}"
+done
+SCRIPT_PATH="$(readlink -f "${SCRIPT_PATH}")"
+SCRIPT_DIR="$(cd -P "$(dirname -- "${SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+# SCRIPT_DIR is guaranteed to be the directory where this script lives
+# no matter where you call it from, or how you got to it.
+cd ${SCRIPT_DIR}
+# This should leave us at the top level of dev0 - No matter what.
+#set -x
+echo "starting dev0rc"
+export DEV0=$(pwd)
+if [[ "$DEV0_TREES" == "" ]]; then
+    echo "Unable to find DEV0 Trees.  "
+    echo "Please define and export DEV0_TREES in your ~/.bashrc"
+    echo " or place DEV0 in a directory named trees"
+    return 
+fi
+export DEV0_ACTIONS=$DEV0/actions
+export DEV0_HELPERS=$DEV0/helpers
+export DEV0_TESTS=$DEV0/tests
+export DEV0_USER_DATA=~/.dev0
+export DEV0_CURRENT_WORK_CONTEXT_FILE=$DEV0_USER_DATA/context
+if [ ! -e "$DEV0_CURRENT_WORK_CONTEXT_FILE"  ] || [ "$(cat $DEV0_CURRENT_WORK_CONTEXT_FILE)" == "" ]; then
+  mkdir -p ~/.dev0
+  echo "dev0" >$DEV0_CURRENT_WORK_CONTEXT_FILE
+fi
+
+alias trees="cd $(pwd)/..; ls ./"
+alias ide="f(){ source $(pwd)/actions/ide \$@; unset -f f; }; f"
+alias build="f(){ source $(pwd)/actions/build \$@; unset -f f; }; f"
+alias run="f(){ source $(pwd)/actions/run \$@ unset -f f; }; f"
+alias debug="f(){ source $(pwd)/actions/run \$@ debug ; unset -f f; }; f"
+alias context="f(){ source $(pwd)/actions/context \$@; unset -f f; }; f"
+alias new="f(){ source $(pwd)/actions/new \$@; unset -f f; }; f"
+alias status="f(){ source $(pwd)/actions/status \$@; unset -f f; }; "
+alias dev0rc="source $(pwd)/dev0rc"
+
+function copy_alias(){
+alias $2="$(alias $1 |sed -e s/.*=// -e s/\'//g )"
+
+}
+copy_alias context c
+copy_alias ide i
+copy_alias build b
+copy_alias run r
+copy_alias debug g
+copy_alias new n
+copy_alias status s
+
+alias trees="cd $DEV0_TREES; ls -1"
+for d in $(ls -d1 $DEV0_TREES/*/); do
+     suite=$(basename $d)
+     alias $suite="cd $d"
+done
+cd $restore_dir

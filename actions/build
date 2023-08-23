@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# if the suiteis found, execute the build script in 
+# the project_directory of the suitegiven in $1. 
+# pass the entire list of command line parameters 
+# and options to that script.
+
+# Errors:
+#   - Environment not set for DEV0
+#   - Project not found among the trees
+#   - Build script not found in the project
+
+source $DEV0_HELPERS/functions
+
+set_work_context_f $1 $2 $3
+
+if [[ $? == 0 ]];then 
+  cd $code_path
+  if [[ ! ("$1" == "") && "$1" == $suite]]; then
+  echo shift
+     shift
+  fi
+  if [[ ! ("$1" == "") && "$1" ==  $working_tree ]]; then
+     shift
+  fi
+    if [[ ! ("$1" == "") && "$1" ==  $sub_suite]]; then
+     shift
+  fi
+  if [[ -e build.sh ]]; then
+    ./build.sh  $@
+  else 
+    echo "$(pwd) does not contain a build.sh script"
+  fi
+fi

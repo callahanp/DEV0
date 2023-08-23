@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# if the project is found, execute the run script in 
+# the project_directory of the project given in $1. 
+# pass the entire list of command line parameters 
+# and options to that script.
+
+# Errors:
+#   - Environment not set for DEV0
+#   - Project not found among the trees
+#   - run script not found in the project
+
+# set +x # uncomment to debug
+source $DEV0_HELPERS/functions
+
+set_context_f $1 $2 $3
+
+if [[ $? == 0 ]];then 
+  cd $code_path
+  if [[ ! ("$1" == "") && "$1" == $project ]]; then
+  echo shift
+     shift
+  fi
+  if [[ ! ("$1" == "") && "$1" ==  $activity ]]; then
+     shift
+  fi
+    if [[ ! ("$1" == "") && "$1" ==  $repository ]]; then
+     shift
+  fi
+  if [[ -e build.sh ]]; then
+    ./run.sh  $@
+  else 
+    echo "$(pwd) does not contain a run.sh script"
+  fi
+fi

@@ -1,0 +1,10 @@
+# Function to check if a string is in the array
+is_in_array_f() {
+  local element
+  for element in "${@:2}"; do
+    if [[ "$element" == "$1" ]]; then
+      return 0  # Found in the array
+    fi
+  done
+  return 1  # Not found in the array
+}

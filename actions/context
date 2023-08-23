@@ -1,0 +1,12 @@
+#!/bin/bash
+# set -x #uncomment for debugging
+
+source $DEV0_HELPERS/set_work_context_f
+
+set_work_context_f $1 $2 $3
+if [[ $? == 0 ]]; then
+#   context=$(cat "$DEV0_CURRENT_WORK_CONTEXT_FILE")
+    cd $context_path
+else    
+    exit 1
+fi

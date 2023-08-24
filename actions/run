@@ -10,13 +10,13 @@
 #   - Project not found among the trees
 #   - run script not found in the project
 
-# set +x # uncomment to debug
-source $DEV0_HELPERS/functions
+ set -x # uncomment to debug
+source $DEV0_HELPERS/set_context_f
 
 set_context_f $1 $2 $3
 
 if [[ $? == 0 ]];then 
-  cd $code_path
+  cd $context_path
   if [[ ! ("$1" == "") && "$1" == $project ]]; then
   echo shift
      shift

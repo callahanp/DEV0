@@ -12,7 +12,7 @@
 
 source $DEV0_HELPERS/functions
 
-set_work_context_f $1 $2 $3
+set_context_f $1 $2 $3
 
 if [[ $? == 0 ]];then 
   cd $code_path

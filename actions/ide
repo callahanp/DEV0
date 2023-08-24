@@ -10,16 +10,16 @@
 # no-parameters: use previous context
 # set -x #uncomment to debug
 
-source $DEV0_HELPERS/set_work_context_f
-set_work_context_f $1 $2 $3
+source $DEV0_HELPERS/set_context_f
+set_context_f $1 $2 $3
 if [[ $? == 0 ]];then 
   cd $context_path
   echo "$context_path" > $DEV0_USER_DATA/context 
   if [[ ! -e $code_workspace_file ]]; then
     code_workspace_file="."
+  else 
+    code $code_workspace_file
   fi
-
-  code $code_workspace_file
 else
   echo wtf
 fi

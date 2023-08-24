@@ -1,12 +1,20 @@
 #!/bin/bash
+
 # set -x #uncomment for debugging
 
-source $DEV0_HELPERS/set_work_context_f
+source $DEV0_HELPERS/set_context_f
 
-set_work_context_f $1 $2 $3
+set_context_f $1 $2 $3
 if [[ $? == 0 ]]; then
-#   context=$(cat "$DEV0_CURRENT_WORK_CONTEXT_FILE")
+sed_1="sed -e s|${DEV0_TREES}/||"
+IFS='/' read -r -a context <<< $(echo $context_path|$sed_1)
+current_suite=${context[0]}
+current_activity=${context[1]}
+current_repository=${context[2]}
+
+  if [ -z "$BASH_SOURCE" ]; then
+    echo $context_path
+  else
     cd $context_path
-else    
-    exit 1
+  fi
 fi

@@ -1,0 +1,294 @@
+#!/bin/bash
+# set -x # uncomment for debugging
+# new
+
+# This script can create, populate and modify application suites.
+
+# it accepts a number of parameters, analyzes the current situation
+# with regards to the parameter values supplied and takes the appropriate 
+# action if supported by the supplied parameter values.
+
+# Implicit rules apply to the creation and maintaining of the various 
+# files and directories that make up a working suite.  These rules are
+# found in comments below
+
+if [[ "$1" == "" ]]; then
+   Error="What exactly do you want to be new?"
+   echo $Error
+   exit 1
+fi
+while [[ ! "$1" == "" ]]; do
+  echo "$1" "$2"
+  case $1 in
+    suite)
+      suite=$2; shift 2;;
+    suite_branch)
+      suite_branch=$2; shift 2;;
+    suite_origin)
+      suite_origin_url=$2; shift 2;;
+    suite_upstream)
+      suite_upstream_url=$2; shift 2;;
+    suite_origin_url)
+      suite_origin_url=$2; shift 2;;
+    suite_upstream_url)
+      suite_upstream_url=$2; shift 2;;
+    suite_vscode)
+      suite_vscode=$2; shift 2;;
+    activity_vscode)
+      suite_vscode=$2; shift 2;;
+    activity)
+      activity=$2; shift 2;;
+    activity_origin_)
+      activity_origin_url=$2; shift 2;;
+    activity_upstream)
+      activity_upstream_url=$2; shift 2;;
+    activity_origin_url)
+      activity_origin_url=$2; shift 2;;
+    activity_upstream_url)
+      activity_upstream_url=$2; shift 2;;
+    activity_default_branch)
+      activity_default_branch=$2; shift 2;;
+    repository)
+      repository=$2; shift 2;;
+    repo)
+      repository=$2; shift 2;;
+    repository_vscode)
+    repository_vscode=$2; shift2;;
+    branch)
+      branch=$2; shift 2;;
+    origin)
+      origin_url=$2; shift 2;;
+    origin_url)
+      origin_url=$2; shift 2;;
+    upstream)
+      upstream_url=$2; shift 2;;
+    upstream_url)
+      upstream_url=$2; shift 2;;
+    *)
+        Error="$item is not a valid item in new"
+        exit 1
+      ;;
+  esac
+  if [[ "$1" == "" ]]; then
+    break
+  fi
+done
+echo "suite:                   $suite"
+echo "suite_origin_url:        $suite_origin_url"
+echo "suite_upstream_url:      $suite_upstream_url"
+echo "suite_branch:            $suite_branch"
+echo "suite_vscode:            $suite_vscode"
+echo "activity:                $activity"
+echo "activity_git:            $activity_git"
+echo "activity_branch:         $activity_branch"
+echo "activity_vscode:         $activity_vscode"
+echo "activity_origin_url:     $activity_origin_url"
+echo "activity_upstream_url:   $activity_upstream_url"
+echo "repository:              $repository"
+echo "repository_vscode:       $repository_vscode"
+echo "upstream_url:            $upstream_url"
+echo "origin_url:              $origin_url"
+
+source $DEV0_HELPERS/validate_name_f
+
+function set_remote_f (){
+  remote_name="$1"
+  remote_url="$2"
+  result=$(git remote add $remote_name $remote_url)
+  if [[ $? == 2 \
+      && ! "$result" == "error: remote $remote_name already exists." ]]; then
+      echo $result
+      exit 1
+  fi
+}
+function set_origin_and_upstream(){
+
+  if [[ ! "$origin" == "" ]]; then
+    set_remote_f "origin" "$origin"
+  fi
+    if [[ ! "$upstream" == "" ]]; then
+    set_remote_f "upstream" "$upstream"
+  fi
+}
+function set_vscode() {
+  template=$1
+  code_workspace_filename=$2
+  if [[ ! $vscode == "" ]]; then
+    vscode_config_dir=$DEV0/templates/$template/.vscode
+    if [[ -e $vscode_config_dir ]]; then
+      cp -nr vscode_config_dir ./
+    fi
+      workspace_template_file=$DEV0/TEMPLATES/$template/$template.code-workspace
+    if [[ -e $workspace_template_file ]]; then
+      cp -n $workspace_template_file ./$code_workspace_filename
+    fi
+  fi
+}
+# Suite directories are the top level container for an appliation suite.
+# They will contain Activities, .code-workspace and a .vscode directory
+# They may contain scripts to perform such actions as building, running &
+# debugging.
+# Suites  have their own git, complete with origin, upstream and 
+# additional remotes to support a team working on the suite and any 
+# of its activities.
+
+
+function suite(){
+  local suite
+  local branch
+  local origin
+  local upstream
+  local vscode
+
+  suite=$1
+  branch=$2
+  origin_url=$3
+  upstream_url=$4
+  vscode=$5
+
+  if [[ "$suite" == "" ]]; then
+    echo "You need to specify the suite"
+    return 1
+  fi
+  # The name has to be valid
+  validate_name_f $suite
+  if [[ ?1 == 1 ]]; then
+  exit 1
+  fi
+
+  # suites are assumed to have a .git
+  # make it so
+  ensure_repository $DEV0_TREES/ \
+                    "$suite" "master" "$origin_url" "$upstream_url"
+
+  set_vscode "suite" "${suite}.code-workspace"
+} # end of suite()
+
+function ensure_repository(){
+  local clone_url
+  local repository_parent_dir
+  local repository
+  local branch
+  local origin_url
+  local upstream_url
+  
+  clone_url=""
+  repository_parent_dir=$1
+  repository=$2
+  branch=$3
+  origin_url=$4
+  upstream_url=$5
+
+  cd $repository_parent_dir
+  # make sure there is a repository
+  if [[ ! -e $repository ]]; then
+    if [[ ! "$origin_url" == "" ]]; then
+      clone_url=$origin_url $repository
+    elif [[ ! "$upstream_url" == "" ]]; then
+      clone_url=$upstream_url $repository
+    fi
+    if [[ ! "$clone_url" == "" ]]; then
+      git clone $clone_url $repository
+    fi
+  fi
+  cd $repository_parent_dir
+  if [[ !  -e $repository/.git  &&  !  "${branch}${upstream}${origin}" == "" ]]; then
+    mkdir -p $repository 
+    git init
+  fi
+  # 
+  cd $repository_parent_dir/$repository
+  # check if $branch is already created
+  # create it if not.
+  if [[ ! $branch == "" && -e .git ]]; then
+    # find the current branch
+    current_branch=$(git branch|grep '*'|sed -e 's/[*][ ]*//')
+    if [[ ! "$branch" == "$current_branch" ]]; then
+      is_git_branch $branch
+      if [[ $? == 0 ]]; then
+          git checkout $branch
+      else
+        if [[ $? == 1 ]]; then
+          git branch $branch
+          git checkout $branch
+        fi
+      fi
+    fi
+  fi
+
+  # check if the $branch is currently checked out
+  # checkout if not
+  git branch| grep -w "* $branch" >/dev/null
+  if [[ $? == 1 ]]; then
+    git checkout $branch
+  fi
+}
+function activity() {
+# Activity directories are the second level containers for an appliation suite.
+# They will contain Repositories, .code-workspace and a .vscode directory
+# They may contain scripts to perform such actions as building, running &
+# debugging, specific to the activity
+# Activities can have their own git, complete with origin, upstream and 
+# additional remotes to support a team wiorking on the activity.
+
+
+  local suite
+  local activity
+  local vscode
+  local activity_branch
+  local origin_url
+  local upstream_url
+
+  suite=$1
+  activity=$2
+  vscode=$3
+  default_branch=$4
+  git=$5
+  origin_url=$6
+  upstream_url=$7
+
+# Activity Directories are created under suite directories
+# They will contain Repositories 
+# They may contain activity-name.code-workspace and a .vscode directory
+  mkdir -p "$DEV0_TREES/$suite/$activity"
+  cd $DEV0_TREES/$suite/$activity
+
+  # activities get their own .git repo only if needed
+
+  if [[ ! "$git$origin_url$upstream_url" == ""  ]]; then
+    git_ensure $DEV0_TREES/$suite/$activity \
+              "$repository" "$branch" "$origin_url" "upstream_url"
+  fi
+  set_vscode "activity" "${activity}.code-workspace"
+}
+function repository() {
+  # Repository Directories are clones of repositories from GitLab, GitHub 
+  # or Sourceforge.  They can also be plain .git repos without remotes.
+  
+  local suite
+  local activity
+  local repository
+  local branch
+  local origin_url
+  local upstream_url
+
+  suite=$1
+  activity=$2
+  repository=$3
+  branch=$4
+  origin_url=$5
+  upstream_url=$6
+  clone_url=""
+
+  cd $DEV0_TREES/$suite/$activity
+  ensure_repository $DEV0_TREES/$suite/$activity \
+                    "$repository" "$branch" "$origin_url" "upstream_url"
+}
+suite "$suite" "$suite_branch" "$repository_origin_url" "$repository_upstream_url" "$repository_vscode"
+if [[ ?1 == 1 ]]; then
+  exit 1
+fi
+activity "$suite" "$activity" "$activity_vscode" "$activity_branch" \
+                  "$activity_origin_url" "$activity_upstream_url"
+
+repository "$suite" "$activity" "$repository" "$branch" "$origin_url" "$upstream_url"

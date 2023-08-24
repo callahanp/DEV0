@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#   activity activity
+#                   activity_default_branch origin_url
+#   urls assume you have a login on gitlab, have forked the osm repos there
+#   and that you have an ssh key
+# since there is only one activity, and three repositories,
+# we only need to add the repositories, naming the suite and Activity
+#
+
+m="$DEV0_ACTIONS/suite_maintenance"
+
+git_url="$1"
+suite_name=$(echo $git_url|sed -e s/.*[/]// -e s/.git//)
+$m suite ${suite_name} \
+   suite_origin_url $git_url 
+tree -L 3 $DEV0_TREES/${suite_name}
+cd $DEV0_TREES/$suite_name

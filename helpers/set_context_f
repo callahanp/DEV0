@@ -1,4 +1,6 @@
-function set_work_context_f(){
+#!/bin/bash
+#set -x
+function set_context_f(){
 source $DEV0_HELPERS/is_in_array_f
 # $1: suite-name context is set to suite level
 # 
@@ -19,16 +21,22 @@ if [[ "$DEV0" == "" ]];then
   return 1
 fi
 
-sed_exp="s|${DEV0_USER_DATA}/trees/||"
-suites_a=($(find $DEV0_USER_DATA/trees -maxdepth 1 -mindepth 1 -type d|sed -e "$sed_exp"))
-suite_activities_a=($(find $DEV0_USER_DATA/trees -maxdepth 2 -mindepth 2 -type d|sed -e "$sed_exp"))
-repositories_a=($(find $DEV0_USER_DATA/trees -maxdepth 3 -mindepth 3 -type d|sed -e "$sed_exp"))
+sed_1="sed -e s|${DEV0_TREES}/|| -e s/local// -e s/ARCHIVE// -e s/.vscode//"
+
+suites_a=($(find $DEV0_TREES -maxdepth 1 -mindepth 1 -type d| $sed_1 -))
+suite_activities_a=($(find $DEV0_TREES -maxdepth 2 -mindepth 2 -type d|$sed_1))
+repositories_a=($(find $DEV0_TREES -maxdepth 3 -mindepth 3 -type d|$sed_1))
+
 context_file=$DEV0_USER_DATA/context
 if [[ "$1$2$3" == "" ]];then
   if [[ -e $context_file ]];then
     current_context=$(cat $context_file)
     context_path=$current_context
-    code_workspace_file=$context_path/$(basename $context_path).code-workspace
+    if [[ -e ${context_path}/local/$(basename $context_path).code-workspace ]]; then
+      code_workspace_file=$context_path/local/$(basename $context_path).code-workspace
+    elif [[ -e $context_path/$(basename $context_path).code-workspace ]]; then
+      code_workspace_file=$context_path/$(basename $context_path).code-workspace
+    fi
   else
     echo "No context data found in $context_file"
     echo "provide suite, suite and workspace or suite, workspace and sub-suite"
@@ -38,8 +46,9 @@ else
   suite="$1"
   context_path=$DEV0_TREES/$suite
   code_workspace_file="$suite.code-workspace"
+ 
   if  ! is_in_array_f "$suite"  "${suites_a[@]}";then
-      echo "Application Suite $suite not found in $DEV0/trees"
+      echo "Application Suite $suite not found in $DEV0_TREES"
       return 1
   fi
   if [[ ! "$2" == "" ]];then

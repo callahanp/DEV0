@@ -1,3 +1,4 @@
+#!/bin/bash
 restore_dir=$(pwd)
 SCRIPT_PATH="${BASH_SOURCE}"
 while [ -L "${SCRIPT_PATH}" ]; do
@@ -33,11 +34,11 @@ fi
 alias trees="cd $(pwd)/..; ls ./"
 alias ide="f(){ source $(pwd)/actions/ide \$@; unset -f f; }; f"
 alias build="f(){ source $(pwd)/actions/build \$@; unset -f f; }; f"
-alias run="f(){ source $(pwd)/actions/run \$@ unset -f f; }; f"
+alias run="f(){ source $(pwd)/actions/run \$@;unset -f f; }; f"
 alias debug="f(){ source $(pwd)/actions/run \$@ debug ; unset -f f; }; f"
 alias context="f(){ source $(pwd)/actions/context \$@; unset -f f; }; f"
-alias new="f(){ source $(pwd)/actions/new \$@; unset -f f; }; f"
-alias status="f(){ source $(pwd)/actions/status \$@; unset -f f; }; "
+alias status="f(){ source $(pwd)/actions/status \$@; unset -f f; }; f"
+alias suite_maintenance="f(){ source $(pwd)/actions/suite_maintenance \$@; unset -f f; }; f"
 alias dev0rc="source $(pwd)/dev0rc"
 
 function copy_alias(){
@@ -49,12 +50,12 @@ copy_alias ide i
 copy_alias build b
 copy_alias run r
 copy_alias debug g
-copy_alias new n
+copy_alias suite_maintenance m
 copy_alias status s
 
 alias trees="cd $DEV0_TREES; ls -1"
-for d in $(ls -d1 $DEV0_TREES/*/); do
+for d in $(find $DEV0_TREES -mindepth 1 -maxdepth 1 -type d ); do
      suite=$(basename $d)
-     alias $suite="cd $d"
+     alias $suite="source $(pwd)/actions/context $suite;cd $d"
 done
 cd $restore_dir

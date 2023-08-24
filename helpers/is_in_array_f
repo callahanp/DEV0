@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Function to check if a string is in the array
 is_in_array_f() {
   local element

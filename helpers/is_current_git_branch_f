@@ -1,0 +1,9 @@
+function is_current_git_branch_f() {
+  branch=$1
+  current_branch=$(git branch|grep '*'|sed -e 's/[*][ ]*//')
+  if [[ "$branch" == "$current_branch" ]]; then
+    return 0
+  else 
+    return 1
+  fi
+}

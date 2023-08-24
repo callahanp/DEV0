@@ -1,0 +1,181 @@
+# source $DEV0_HELPERS/functions
+
+
+function validate_name_f() {
+  name=$1
+  if [[  "$name" != "" ]] && [[ "$name" =~ ^[a-z][a-z0-9_-]*$ ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+sed_exp="s|${DEV0_USER_DATA}/trees/||"
+suites_a=($(find $DEV0_USER_DATA/trees -maxdepth 1 -mindepth 1 -type d|sed -e "$sed_exp"))
+suite_workspaces_a=($(find $DEV0_USER_DATA/trees -maxdepth 2 -mindepth 2 -type d|sed -e "$sed_exp"))
+repositories_a=($(find $DEV0_USER_DATA/trees -maxdepth 3 -mindepth 3 -type d|sed -e "$sed_exp"))
+
+function suite_f () {
+# // ${DEV0_TREES}/topLevelsuite
+# $1: op  create get set show
+# $2: suite - required for create & get
+#               ignored for get and show
+#  
+            
+if [[ ! "$2" == "" ]]; then
+  suite="$2"
+  validate_name_f "$suite"
+  if [[ $? == 1 ]]; then
+    echo "\"$name\" is not a valid suite name"
+    return 1
+  fi
+  else
+    suite=$(cat $DEV0_USER_DATA/current_suite)
+    if [[ -e "$DEV0_CURRENT_WORK_CONTEXT_FILE" ]]; then
+      echo "$DEV0_CURRENT_WORK_CONTEXT_FILE not found"
+      echo "Please specify a suite name" 
+      echo "" 
+      return 1
+    fi
+op=$1
+case $op in
+  get)  
+        cat $DEV0_USER_DATA/current_suite
+        return 0
+        ;;
+  create)
+        if [[ "$suite" == "" ]]; then
+          echo "suite name is blank"
+          return 1
+        fi
+        if [[  -e $DEV0_TREES/$suite  ]]; then
+          echo "suite name already found in $DEV0/trees"
+          return 1
+        fi
+        validate_name_f $suite
+        if [[ $? == 1 ]];then
+          return 1
+        fi
+        if [[ -e $DEV0_TREES/$suite ]]; then 
+          echo "suite $suite already present in $DEV0_TREES"
+          return 1
+        fi
+        echo "$suite" > $DEV0_USER_DATA/current_suite
+        mkdir -p $DEV0_USER/trees/$suite
+        echo "cd $DEV0_TREES/$suite"
+        ;;
+  set)
+        if [[ "$suite" == "" ]]; then
+          echo "suite name is blank"
+          return 1
+        fi
+        if [[ ! -e $DEV0_TREES/$suite  ]]; then
+          echo "suite name not found in $DEV0/trees"
+          return 1
+        fi
+        echo $suite > "$DEV0_USER_DATA/current_suite"
+        mkdir -p "$DEV0_USER_DATA/trees/$suite"
+        cd $DEV0_TREES/$suite
+        echo "$DEV0_TREES/$suite"
+        return 0
+        ;;
+  show) 
+        current_suite=$(cat $DEV0_USER_DATA/current_suite)
+        if [[ ! -e $current_suite ]];then
+          echo "Error current_suite Not Found"
+          exit 1
+        fi 
+        validate_name_f $current_suite
+        if [[ $? == 1 ]]; then
+          echo "DEV0 Error: $DEV0_USER_DATA/current_suite contains an invalid suite name"
+        fi
+        echo "Current suite:     $current_suite"
+        echo "Top Level Directory: $DEV0_TREES/$current_suite"
+        
+        ;;
+  *)    echo "invalid operation for suite" 
+        return 1
+        ;;
+ esac
+
+}
+
+function   repository_tree_f() {
+  $op="$1"
+  case $op in
+  "get")
+    ;;
+  "set")
+      ;;
+  "show")
+      ;;
+  *) 
+    echo $op is not a valid   repository_tree operation
+    return 1
+    ;; 
+  esac
+}
+
+function repository_git_f () {
+  $op="$1"
+  case $op in
+   "get")
+    ;;
+  "set")
+      ;;
+  "show")
+      ;;
+  *)     echo $op is not a valid   repository_tree operation
+    return 1
+    ;; 
+  esac
+
+}
+function repository_origin_f () {
+  $op="$1"
+  case $op in
+  "get")
+    ;;
+  "set")
+      ;;
+  "show")
+      ;;
+  *) 
+    echo $op is not a valid   repository_tree operation
+    return 1
+    ;; 
+  esac
+}
+function repository_upstream_f () {
+  $op="$1"
+  case $op in
+   "get")
+    ;;
+  "set")
+      ;;
+  "show")
+      ;;
+  *) 
+    echo $op is not a valid   repository_tree operation
+    return 1
+    ;; 
+  esac
+
+}
+
+function repository_something_else_f {
+  $op="$1"
+  case $op in
+  "get")
+    ;;
+  "set")
+      ;;
+  "show")
+      ;;
+  *) 
+    echo $op is not a valid   repository_tree operation
+    return 1
+    ;; 
+  esac
+
+}

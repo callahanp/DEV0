@@ -1,0 +1,10 @@
+#!/bin/bash
+
+function validate_name_f() {
+  name=$1
+  if [[  "$name" != "" ]] && [[ "$name" =~ ^[a-z][a-z0-9_-]*$ ]]; then
+    return 0
+  else
+    return 1
+  fi
+}

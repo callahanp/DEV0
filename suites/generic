@@ -8,7 +8,7 @@
 # we only need to add the repositories, naming the suite and Activity
 #
 
-m="$DEV0_ACTIONS/suite_maintenance"
+m="$DEV0_ACTIONS/app"
 
 git_url="$1"
 suite_name=$(echo $git_url|sed -e s/.*[/]// -e s/.git//)

@@ -15,7 +15,7 @@ source $DEV0_HELPERS/log_f
 source $DEV0_HELPERS/list_copied_array_f
 
 function suite(){
-  log_f LOG_LEVEL_INFO "suite () called in suite_maintenance"
+  log_f LOG_LEVEL_INFO "suite () called in app"
   local suite
   local branch
   local origin

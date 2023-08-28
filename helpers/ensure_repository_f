@@ -37,7 +37,7 @@ function ensure_repository_f(){
   # show  git branch
   # show  git status 
 
-  log_f LOG_LEVEL_INFO "ensure_repository_f () called from suite_maintenance"
+  log_f LOG_LEVEL_INFO "ensure_repository_f () called from app"
   
   local operation
   local log_level

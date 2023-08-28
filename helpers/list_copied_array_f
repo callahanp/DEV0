@@ -1,0 +1,28 @@
+# not executable directly 
+# provides list_copied_array_f()
+# provides logs a list of the
+# key: value pairs in an array 
+# named copied_array
+# this array can be produced and used as follows:
+# if [[ ! ${#array_to_be_listed[@]} == 0 ]]; then
+#  declare -A copied_array; 
+#  for key in ${!array_to_be_listed[@]}; do 
+#  copied_array[$key]=${array_to_be_listed[$key]}; done;
+#  list_copied_array_f "Title line for list"
+# fi
+
+
+function list_copied_array_f () {
+  echo ""
+  echo "$1"
+  echo ""
+  max_len=0
+  for key in ${!copied_array[@]}; do
+    max_len=$((${#key} > $max_len ? ${#key} : $max_len)) 
+  done
+  for key in ${!copied_array[@]}; do
+      let pad_len=$max_len-${#key}+1
+    pad=$(printf ' %.0s' $(seq $pad_len)) 
+    echo "${key}: $pad ${copied_array[$key]}"
+  done
+}

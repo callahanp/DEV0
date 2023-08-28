@@ -1,0 +1,12 @@
+#!/bin/bash
+
+project_name=$1
+project_type=$2
+
+if [[ -e $DEV0/templates/$project_type ]]; then
+  echo There is already a template in $DEV0/templates/$project_type
+  exit 1
+fi
+
+cp -r $DEV0_TREES/$project_name $DEV0/templates/$project_type 
+rm -rf $DEV0/templates/$project_type/.git   # new projects get a new one

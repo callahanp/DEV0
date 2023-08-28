@@ -2,5 +2,5 @@
   "cmake.configureOnOpen": false,
     "files.exclude": {
     "**/.git": false
-  },
+  }
 }

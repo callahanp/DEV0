@@ -1,0 +1,107 @@
+function ensure_repository_f(){
+#  operation:  
+  #   no-create - don't create repository or branch - give verbose report
+  #   create    - create repository and branch if needed
+# log_level:
+  #   status - show the .git status of the .git in $repository_parent_dir/$Repository
+  #   report - show all available information
+  #   silent - echo nothing
+  #   errors - report errors
+  
+# Responsibilities (each one is a function defined here.)
+
+  # create a branch local branch if $branch is not found
+  # checkout $branch if it is not checked out
+  # show  .git folder path
+  # show  git remote
+  # show  git branch
+  # show  git status 
+
+
+function verify_branch(){
+  if [[ "$branch" == "" ]]; then
+    return 3 # nothing to verify
+  fi
+  found_not_checked_out=$(git branch | grep -e "  $branch")
+  found_checked_out=$(git branch | grep -e "  $branch")
+  if [[ ! "$found_checked_out" == "" ]]; then
+    return 0
+  elif [[ ! "$found_not_checked_out" == "" ]]; then
+    return 1 # found an checked out
+  else
+    return 2 # $branch not present
+  fi
+}
+function create_branch(){
+  
+  git branch $branch
+}
+function checkout_branch(){
+  git checkout $branch
+}
+
+
+  local operation
+  local log_level
+  local repository_parent_dir
+  local repository
+  local branch
+  local origin_url
+  local upstream_url
+ 
+  local clone_url
+
+  operation="$1"
+  log_level="$2"
+  repository_parent_dir=$3
+  repository="$4"
+  branch="$5"
+  origin_url="$6"
+  upstream_url="$7"
+  
+  clone_url=""
+
+  if [[ "$operation" == "create" ]]; then
+    creating_or_would_create="Creating"
+  else 
+    "Would Create"
+  fi
+  
+  cd $repository_parent_dir
+
+  if [[ "$operation" == "create" ]];then
+    create_clone $operation $log_level
+  fi
+  
+  cd $repository_parent_dir
+  if [[ !  -e $repository/.git  &&  !  "${branch}${upstream}${origin}" == "" ]]; then
+    mkdir -p $repository 
+    git init
+  fi
+  # 
+  cd $repository_parent_dir/$repository
+  # check if $branch is already created
+  # create it if not.
+  if [[ ! $branch == "" && -e .git ]]; then
+    # find the current branch
+    current_branch=$(git branch|grep '*'|sed -e 's/[*][ ]*//')
+    if [[ ! "$branch" == "$current_branch" ]]; then
+      is_git_branch $branch
+      if [[ $? == 0 ]]; then
+          git checkout $branch
+      else
+        if [[ $? == 1 ]]; then
+          git branch $branch
+          git checkout $branch
+        fi
+      fi
+    fi
+  fi
+
+  # check if the $branch is currently checked out
+  # checkout if not
+  git branch| grep -w "* $branch" >/dev/null
+  if [[ $? == 1 ]]; then
+    git checkout $branch
+  fi
+}

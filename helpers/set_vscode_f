@@ -1,0 +1,26 @@
+#!/bin/bash
+
+function set_vscode(){
+  # assumes you are in the directory where a .vscode-workspace
+  # is needed
+  vscode_support=$1
+  log_f LOG_LEVEL_FLOOD "set_vscode $vscode_support in $(pwd)"
+  code_workspace_filename=$(basename $(pwd)).code-workspace
+  if [[ ! -e "$(basename $(pwd)).code-workspace" ]]; then
+     cat > $code_workspace_filename <<EOD
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": false
+		}
+	}
+}
+]
+EOD
+  fi
+}

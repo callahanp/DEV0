@@ -12,7 +12,9 @@ m="$DEV0_ACTIONS/suite_maintenance"
 
 git_url="$1"
 suite_name=$(echo $git_url|sed -e s/.*[/]// -e s/.git//)
-$m suite ${suite_name} \
-   suite_origin_url $git_url 
+$m operation no-create
+   loglevel LOG_LEVEL_FLOOD
+   suite ${suite_name} \
+   origin $git_url 
 tree -L 3 $DEV0_TREES/${suite_name}
 cd $DEV0_TREES/$suite_name

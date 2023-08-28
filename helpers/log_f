@@ -1,0 +1,31 @@
+# not executable directly 
+# provides log_f()
+# provides log level constants
+LOG_LEVEL_SILENT=0
+LOG_LEVEL_INFO=1
+LOG_LEVEL_ERROR=2
+LOG_LEVEL_WARNING=3
+LOG_LEVEL_DEBUG=4
+LOG_LEVEL_FLOOD=5
+# to provide this function in a script, add:
+# source $DEV0_HELPERS/ensure_repository_f
+function log_f (){
+  if [[ "$log_level" == "" ]]; then
+    log_level=1
+  fi
+  msg_level="$1" # 0=info 1=warn 2=error 3=debug 4=flood
+  msg_text="$2"
+  case $msg_level in
+    0)  msg_level_text="Silent   ";;
+    1)  msg_level_text="Info:    ";;
+    2)  msg_level_text="Error:   ";;
+    3)  msg_level_text="Warning: ";;
+    4)  msg_level_text="Debug:   ";;
+    5)  msg_level_text="Flood:   ";;
+  esac
+
+  if [[ $msg_level -le $log_level ]]; then
+    echo "$msg_level_text $msg_text"
+  fi
+
+}

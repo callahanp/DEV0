@@ -17,11 +17,10 @@ if [[ $? == 0 ]];then
   echo "$context_path" > $DEV0_USER_DATA/context 
   if [[ ! -e $code_workspace_file ]]; then
     code_workspace_file="."
-  else 
-    code $code_workspace_file
   fi
+  code $code_workspace_file
+  echo $context_path
+  cd $context_pat
 else
-  echo wtf
+  echo Problem while setting context
 fi
-echo $context_path
-cd $context_path

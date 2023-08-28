@@ -1,0 +1,117 @@
+#!/bin/bash
+# not executable directly 
+# to provide this function in a script, add:
+# source $DEV0_HELPERS/ensure_repository_f
+
+function get_clone_name_from_url(){
+  url="$1"
+  clone_name=$(echo $url | sed -e 's/.*[/]//' -e s/[.]git//)
+}
+function set_clone_name_f(){
+  if [[ ! "$repository" == "" ]]; then
+    clone_name=$repository
+  else
+    get_clone_name_from_url "$clone_url"
+  fi
+}
+function ensure_repository_f(){
+#  operation:  
+  #   no-create - don't create repository or branch - give verbose report
+  #   create    - create repository and branch if needed
+  #   status - show the .git status of the .git in $repository_parent_dir/$Repository
+  #   report - show all available information
+  # log_level:
+  #   silent - echo nothing
+  #   errors - report errors
+  
+# Responsibilities (each one is a function defined here.)
+  # verify whether $repository_parent_dir/$repository exists and 
+  #        contains a .git
+  # create or clone a .git if one is not present in $repository_parent_dir
+  # verify whether $repository_parent_dir/$repository exists
+  #        and is checked out
+  # create a branch local branch if $branch is not found
+  # checkout $branch if it is not checked out
+  # show  .git folder path
+  # show  git remote
+  # show  git branch
+  # show  git status 
+
+  log_f LOG_LEVEL_INFO "ensure_repository_f () called from suite_maintenance"
+  
+  local operation
+  local log_level
+  local repository_parent_dir
+  local repository
+  local branch
+  local origin_url
+  local upstream_url
+ 
+  local clone_url
+
+  operation="$1"
+  log_level="$2"
+  repository_parent_dir=$3
+  repository="$4"
+  branch="$5"
+  origin_url="$6"
+  upstream_url="$7"
+  
+  clone_url=""
+
+  if [[ "$operation" == "create" ]]; then
+    creating_or_would_create="Creating"
+  else 
+    creating_or_would_create="Would Create"
+  fi
+
+  cd $repository_parent_dir
+
+  clone_url=""
+  clone_name=""
+
+  if [[ ! "$upstream" == "" ]]; then
+    clone_url=$upstream
+    set_clone_name_f
+    command="cd repository_parent_dir; git clone $clone_url $clone_name"
+  fi
+  if [[ ! "$origin" == "" ]]; then
+    clone_url=$origin
+    set_clone_name_f
+    command="cd $repository_parent_dir ; git clone $clone_url $clone_name"
+  fi
+
+  if [[ "$clone_url" == "" ]]; then
+    command="cd repository_parent_dir/repository; mkdir -p $repository; git init"
+  fi
+  
+  if [[ "$repository" == "" && clone_url == "" ]]; then
+    log_f "no repository or url provided can't create clone"
+    return 2 
+  fi
+  if [[ -e repository_parent_dir/$clone_name ]]; then
+    if [[ -e repository_parent_dir/$clone_name ]]; then
+      log_f "repository exists, cannot create clone"
+      return 3 
+    else
+      log_f "repository folder exists, cannot create clone"
+      return 4 
+    fi
+  fi
+  if [[ "$command" == "" ]]; then
+    log_f "Something bad has happened, you ended up without a command to execute."
+
+    return 5 
+  fi
+  
+  # ok to create clone
+  echo "Working_directory $(pwd)"
+  echo "$creating_or_would_create a .git repository unless already in place"
+  echo $command
+  if [[ "$operation" == "create" ]]; then
+    eval $command
+     if [[ ! $? == 0 ]]; then
+        log_f "Error while executing $command"
+     fi
+  fi
+}

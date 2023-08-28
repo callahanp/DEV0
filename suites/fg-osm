@@ -1,35 +1,37 @@
 #!/bin/bash
 
-#   activity activity
-#                   activity_default_branch origin_url
-#   urls assume you have a login on gitlab, have forked the osm repos there
+#   urls assume you have a login  gitlab and have forked the osm repos there
 #   and that you have an ssh key
-# since there is only one activity, and three repositories,
-# we only need to add the repositories, naming the suite and Activity
 #
-
+source $DEV0_HELPERS/log_f 
+user=callahanp
 m="$DEV0_ACTIONS/suite_maintenance"
-$m suite fg-osm \
-              suite_origin git@gitlab.com:callahanp/fgosm.git \
-              activity master \
-              repository osm2Gear \
-              branch default \
-              origin_url git@gitlab.com:callahanp/osm2gear.git \
-              upstream_url git@gitlab.com:osm2city/osm2gear.git 
-cd $DEV0_TREES/fg-osm
-
-$m suite fg-osm \cd
-              activity   master \
-              repository osm2city \
-              branch     master \
-              origin_url git@gitlab.com:callahanp/osm2city.git \
-              upstream_url git@gitlab.com:osm2city/osm2city.git 
-$m suite fg-osm \
-              activity     master \
-              repository   osm2city-data \
-              branch       master \
-              origin_url git@gitlab.com:callahanp/osm2city-data.git \
-              upstream_url git@gitlab.com:osm2city/osm2city-data.git 
-              
+# set -x
+$m  operation create \
+    loglevel  LOG_LEVEL_FLOOD \
+    suite fg-osm \
+    origin git@gitlab.com:$user/fgosm.git \
+    vscode default \
+    branch next \
+    \
+    activity main \
+    vscode c++ \
+    \
+    repository osm2Gear \
+    branch ws3.0 \
+    origin git@gitlab.com:$user/osm2gear.git \
+    upstream git@gitlab.com:osm2city/osm2gear.git \
+    activity   main \
+    \
+    repository osm2city \
+    branch     master \
+    origin git@gitlab.com:$user/osm2city.git \
+    upstream git@gitlab.com:osm2city/osm2city.git \
+    \
+    repository   osm2city-data \
+    branch       master \
+    origin git@gitlab.com:callahanp/osm2city-data.git \
+    upstream git@gitlab.com:osm2city/osm2city-data.git 
+    
 
 tree -L 3 $DEV0_TREES/fg-osm

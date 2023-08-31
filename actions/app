@@ -1,5 +1,5 @@
 #!/bin/bash
- set -x # uncomment for debugging
+#set -x # uncomment for debugging
 # new
 
 # This script can create, populate and modify application suites.
@@ -13,6 +13,8 @@ source $DEV0_HELPERS/validate_name_f
 source $DEV0_HELPERS/ensure_repository_f
 source $DEV0_HELPERS/log_f
 source $DEV0_HELPERS/list_copied_array_f
+source $DEV0_HELPERS/leave_via_return_or_exit_f
+source $DEV0_HELPERS/set_vscode_f
 
 function suite(){
   log_f LOG_LEVEL_INFO "suite () called in app"
@@ -37,7 +39,7 @@ function suite(){
   # The name has to be valid
   validate_name_f $suite
   if [[ ?1 == 1 ]]; then
-  exit 1
+    leaving="1"
   fi
 
   # suites are assumed to have a .git
@@ -49,7 +51,7 @@ function suite(){
                      "$origin"      \
                      "$upstream"   
 
-  set_vscode "suite" "${suite}.code-workspace"
+  set_vscode_f "suite" "${suite}.code-workspace"
 } # end of suite()
 
 function activity() {
@@ -85,7 +87,7 @@ function activity() {
 # The name has to be valid
   validate_name_f $activity
   if [[ ?1 == 1 ]]; then
-  exit 1
+  leaving="1"
   fi
 
   # activities have .git repositories only if they have one specified.
@@ -99,7 +101,7 @@ function activity() {
   else 
     mkdir -p $DEV0_TREES/$suite/$activity
   fi
-  set_vscode "activity" "${activity}.code-workspace"
+  set_vscode_f "activity" "${activity}.code-workspace"
 
   cd $DEV0_TREES/$suite/$activity
 
@@ -109,7 +111,7 @@ function activity() {
   
   # also, we need to vary the type of .code-workspace 
   # beyond generic.
-  set_vscode "activity" "${activity}.code-workspace"
+  set_vscode_f "activity" "${activity}.code-workspace"
 }
 function repository() {
   # Repository Directories are clones of repositories from GitLab, GitHub 
@@ -144,6 +146,7 @@ declare -A activity_p
 declare -A repository_p
 operation=""
 loglevel=0
+operation="create"
 #set -x
 while [[ ! "$1" == "" ]]; do
   case $1 in
@@ -182,7 +185,7 @@ while [[ ! "$1" == "" ]]; do
             ##########
             if [[ ?1 == 1 ]]; then
             log_f LOG_LEVEL_ERROR "suite ()returned an error status"
-            exit 1 # any errors creating or verifying suite, then exit
+            leaving="1" # any errors creating or verifying suite, then leaving="1"
             fi
             ;;
         esac
@@ -214,7 +217,7 @@ while [[ ! "$1" == "" ]]; do
           activity #### <===== activity level created here
           ##########
           if [[ ?1 == 1 ]]; then
-          exit 1 # any errors creating or verifying suite, then exit
+          leaving="1" # any errors creating or verifying suite, then leaving="1"
           fi
           declare -gA activity_p # reset empty associative array
           activity_p["suite"]=${suite["name"]}
@@ -251,26 +254,27 @@ while [[ ! "$1" == "" ]]; do
           repository #### <===== repository level created here
           ##########
           if [[ ?1 == 1 ]]; then
-          exit 1 # any errors creating or verifying suite, then exit
+          leaving="1" # any errors creating or verifying suite, then leaving="1"
           fi
           declare -gA repository_p # reset empty associative array
           repository_p["activity"]=${activity["name"]}
           skip="yes"
 
         esac
-      done
+        done
       ;; # end of case repository)
     *)
-        Error="$item is not a valid item"
-        exit 1
+        echo Error: $1 is not a valid item
+        cat << EOD
+You must specifiy suite "<name>" or suite "" 
+and the item tag for every parameter must be provided
+EOD
+        $leave 1
       ;;
   esac
-  if [[ "$1" == "" ]]; then
-    break
-  fi
+
 done
 
-exit
 
 
 

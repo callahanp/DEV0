@@ -20,7 +20,7 @@ if [[ $? == 0 ]];then
   fi
   code $code_workspace_file
   echo $context_path
-  cd $context_pat
+  cd $context_path
 else
   echo Problem while setting context
 fi

@@ -1,0 +1,9 @@
+#!/bin/bash
+function leave_via_return_or_exit_f (){
+  if [ -z "$BASH_SOURCE" ]; then
+    leave="exit"
+  else
+       leave="return"
+  fi
+}
+leave_via_return_or_exit_f
